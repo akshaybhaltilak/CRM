@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import PaymentReview from './PaymentReview'; // Import the PaymentReview component
 
@@ -6,8 +6,8 @@ const Billing = () => {
   const [customerData, setCustomerData] = useState({
     name: '',
     phone: '',
-    totalAmount: '',
-    paidAmount: '',
+    totalAmount: 0,
+    paidAmount: 0,
     products: [], // Array to hold products purchased by the customer
   });
 
@@ -15,9 +15,12 @@ const Billing = () => {
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [todayPending, setTodayPending] = useState(0);
   const [showPaymentReview, setShowPaymentReview] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false); // State to control receipt visibility
+  const receiptRef = useRef(); // Reference for printing
+
   const [searchTerm, setSearchTerm] = useState(''); // State for search term
   const [filteredData, setFilteredData] = useState([]); // State for filtered data
-  const [newProduct, setNewProduct] = useState({ name: '', price: '' }); // State for new product
+  const [newProduct, setNewProduct] = useState({ name: '', price: '', quantity: 1 }); // State for new product with quantity
 
   useEffect(() => {
     // Calculate today's earnings and pending amounts when the component mounts
@@ -40,10 +43,30 @@ const Billing = () => {
     setCustomerData({ ...customerData, [e.target.name]: e.target.value });
   };
 
+  const handleAddProduct = () => {
+    if (!newProduct.name || !newProduct.price || !newProduct.quantity) {
+      alert('Please enter product name, price, and quantity.');
+      return;
+    }
+
+    const updatedProducts = [...customerData.products, newProduct];
+    const updatedTotalAmount = updatedProducts.reduce(
+      (sum, product) => sum + parseFloat(product.price) * product.quantity,
+      0
+    );
+
+    setCustomerData({ 
+      ...customerData, 
+      products: updatedProducts,
+      totalAmount: updatedTotalAmount, // Automatically calculate the total bill amount
+    });
+    setNewProduct({ name: '', price: '', quantity: 1 }); // Reset new product input
+  };
+
   const handleGenerateBill = () => {
     const { name, phone, totalAmount, paidAmount, products } = customerData;
 
-    if (!name || !phone || !totalAmount || !paidAmount || products.length === 0) {
+    if (!name || !phone || products.length === 0) {
       alert('Please fill in all fields and add at least one product before generating a bill.');
       return;
     }
@@ -66,8 +89,7 @@ const Billing = () => {
     
     localStorage.setItem('customerBillingData', JSON.stringify(existingData));
     alert('Bill generated successfully!');
-    setCustomerData({ name: '', phone: '', totalAmount: '', paidAmount: '', products: [] });
-    setNewProduct({ name: '', price: '' }); // Reset new product
+    setCustomerData({ name: '', phone: '', totalAmount: 0, paidAmount: 0, products: [] });
 
     // Recalculate today's amounts after generating a bill
     const today = new Date().toLocaleDateString();
@@ -75,10 +97,13 @@ const Billing = () => {
       setTodayEarnings(todayEarnings + parseFloat(billData.paidAmount));
       setTodayPending(todayPending + pendingAmount);
     }
+
+    handleSendWhatsApp(); // Automatically send WhatsApp message
+    setShowReceipt(true); // Show receipt after generating the bill
   };
 
   const handleSendWhatsApp = () => {
-    const message = `Thank you for shopping, ${customerData.name}! Your total bill is ₹${customerData.totalAmount}.`;
+    const message = `Thank you for shopping, ${customerData.name}! Your total bill is ₹${customerData.totalAmount}, and you've paid ₹${customerData.paidAmount}.`;
     const whatsappURL = `https://wa.me/${customerData.phone}?text=${encodeURIComponent(message)}`;
     window.open(whatsappURL, '_blank');
   };
@@ -103,24 +128,6 @@ const Billing = () => {
     setFilteredData(JSON.parse(localStorage.getItem('customerBillingData')) || []); // Reset filtered data
   };
 
-  const togglePaymentReview = () => {
-    setShowPaymentReview(!showPaymentReview);
-  };
-
-  // Calculate the total amount (cash earnings + pending amount)
-  const totalAmount = todayEarnings + todayPending;
-
-  const handleDeleteCustomerData = (index) => {
-    const existingData = JSON.parse(localStorage.getItem('customerBillingData')) || [];
-    existingData.splice(index, 1);
-    localStorage.setItem('customerBillingData', JSON.stringify(existingData));
-    alert('Customer data deleted successfully!');
-    // Recalculate today's amounts
-    calculateTodayAmounts(); // Recalculate amounts to update today's earnings and pending
-    // Update filtered data
-    setFilteredData(existingData);
-  };
-
   // Function to filter customer data based on search term
   const handleSearch = (e) => {
     const value = e.target.value;
@@ -135,20 +142,31 @@ const Billing = () => {
     setFilteredData(filtered);
   };
 
-  const handleAddProduct = () => {
-    if (!newProduct.name || !newProduct.price) {
-      alert('Please enter both product name and price.');
-      return;
-    }
+  // Function to print the receipt
+  const handlePrintReceipt = () => {
+    window.print(); // Opens the browser's print dialog
+  };
 
-    const updatedProducts = [...customerData.products, newProduct];
-    setCustomerData({ ...customerData, products: updatedProducts });
-    setNewProduct({ name: '', price: '' }); // Reset new product input
+  // Function to delete customer data
+  const handleDeleteData = (phone) => {
+    const existingData = JSON.parse(localStorage.getItem('customerBillingData')) || [];
+    const updatedData = existingData.filter(data => data.phone !== phone);
+    localStorage.setItem('customerBillingData', JSON.stringify(updatedData));
+    setFilteredData(updatedData); // Update filtered data
+    alert('Customer data deleted successfully.');
+  };
+
+  // Function to resend WhatsApp message
+  const handleResendWhatsApp = (data) => {
+    const message = `Hello ${data.name}, this is a reminder of your pending payment of ₹${data.pendingAmount}. Thank you!`;
+    const whatsappURL = `https://wa.me/${data.phone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappURL, '_blank');
   };
 
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Billing</h2>
+      {/* Form for customer and products */}
       <input
         type="text"
         name="name"
@@ -165,24 +183,8 @@ const Billing = () => {
         onChange={handleChange}
         className="border p-2 mb-2 w-full"
       />
-      <input
-        type="number"
-        name="totalAmount"
-        placeholder="Total Amount"
-        value={customerData.totalAmount}
-        onChange={handleChange}
-        className="border p-2 mb-2 w-full"
-      />
-      <input
-        type="number"
-        name="paidAmount"
-        placeholder="Paid Amount"
-        value={customerData.paidAmount}
-        onChange={handleChange}
-        className="border p-2 mb-2 w-full"
-      />
 
-      {/* New Product Input Fields */}
+      {/* Product Input Fields */}
       <h3 className="text-lg font-semibold mt-4">Add Products</h3>
       <input
         type="text"
@@ -198,6 +200,13 @@ const Billing = () => {
         onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
         className="border p-2 mb-2 w-full"
       />
+      <input
+        type="number"
+        placeholder="Quantity"
+        value={newProduct.quantity}
+        onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
+        className="border p-2 mb-2 w-full"
+      />
       <button
         onClick={handleAddProduct}
         className="bg-blue-500 text-white p-2 rounded mt-2"
@@ -205,100 +214,122 @@ const Billing = () => {
         Add Product
       </button>
 
+      {/* Display Total Amount */}
+      <div className="mt-4">
+        <h3 className="text-lg font-semibold">Total Bill Amount: ₹{customerData.totalAmount}</h3>
+        <input
+          type="number"
+          name="paidAmount"
+          placeholder="Paid Amount"
+          value={customerData.paidAmount}
+          onChange={handleChange}
+          className="border p-2 mb-2 w-full"
+        />
+      </div>
+
+      {/* Buttons for generating bill and viewing data */}
       <button
         onClick={handleGenerateBill}
-        className="bg-blue-500 text-white p-2 rounded mt-2 mr-2"
+        className="bg-green-500 text-white p-2 rounded mt-4"
       >
         Generate Bill
       </button>
       <button
-        onClick={handleSendWhatsApp}
-        className="bg-green-500 text-white p-2 rounded mt-2"
-      >
-        Send WhatsApp Message
-      </button>
-      <button
         onClick={handleViewData}
-        className="bg-yellow-500 text-white p-2 rounded mt-2 ml-2"
+        className="bg-gray-500 text-white p-2 rounded ml-4 mt-4"
       >
         View and Download Data
       </button>
 
-      {/* Earnings, Pending, and Total Amount Sections */}
-      <div className="mt-4">
-        <h3 className="text-xl font-semibold">Today's Cash Earnings</h3>
-        <p className="text-lg">₹{todayEarnings}</p>
-      </div>
-      <div className="mt-4">
-        <h3 className="text-xl font-semibold">Today's Pending Amount</h3>
-        <p className="text-lg">₹{todayPending}</p>
-      </div>
-      <div className="mt-4">
-        <h3 className="text-xl font-semibold">Total Amount</h3>
-        <p className="text-lg">₹{totalAmount}</p>
-      </div>
+      {/* Payment Review Section */}
+      {showPaymentReview && (
+        <PaymentReview
+          todayEarnings={todayEarnings}
+          todayPending={todayPending}
+          onClose={() => setShowPaymentReview(false)}
+        />
+      )}
 
-      {/* View Data Modal */}
+      {/* Receipt for Printing */}
+      {showReceipt && (
+        <div ref={receiptRef} className="mt-8 border p-4">
+          <h3 className="text-lg font-semibold">Receipt</h3>
+          <p>Customer Name: {customerData.name}</p>
+          <p>Phone: {customerData.phone}</p>
+          <p>Total Amount: ₹{customerData.totalAmount}</p>
+          <p>Paid Amount: ₹{customerData.paidAmount}</p>
+          <p>Pending Amount: ₹{Math.max(0, customerData.totalAmount - customerData.paidAmount)}</p>
+          <h4 className="text-lg font-semibold">Products:</h4>
+          <ul>
+            {customerData.products.map((product, index) => (
+              <li key={index}>
+                {product.name} - ₹{product.price} x {product.quantity}
+              </li>
+            ))}
+          </ul>
+          <button onClick={handlePrintReceipt} className="bg-blue-500 text-white p-2 rounded mt-4">
+            Print Receipt
+          </button>
+        </div>
+      )}
+
+      {/* Modal for Viewing Data */}
       {showModal && (
-        <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-4 rounded shadow-md w-1/2">
-            <h2 className="text-2xl font-bold mb-2">Customer Billing Data</h2>
+        <div className="modal bg-gray-200 p-4">
+          <div className="modal-content bg-white p-6 rounded">
+            <h3 className="text-lg font-semibold">Customer Billing Data</h3>
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search by Name or Phone"
               value={searchTerm}
               onChange={handleSearch}
-              className="border p-2 mb-2 w-full"
+              className="border p-2 mb-4 w-full"
             />
-            <table className="table-auto w-full mb-2">
+            <table className="w-full border">
               <thead>
                 <tr>
-                  <th className="border">Name</th>
-                  <th className="border">Phone</th>
-                  <th className="border">Total Amount</th>
-                  <th className="border">Paid Amount</th>
-                  <th className="border">Pending Amount</th>
-                  <th className="border">Actions</th>
+                  <th className="border p-2">Name</th>
+                  <th className="border p-2">Phone</th>
+                  <th className="border p-2">Total Amount</th>
+                  <th className="border p-2">Paid Amount</th>
+                  <th className="border p-2">Pending Amount</th>
+                  <th className="border p-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredData.map((data, index) => (
                   <tr key={index}>
-                    <td className="border">{data.name}</td>
-                    <td className="border">{data.phone}</td>
-                    <td className="border">{data.totalAmount}</td>
-                    <td className="border">{data.paidAmount}</td>
-                    <td className="border">{data.pendingAmount}</td>
-                    <td className="border">
+                    <td className="border p-2">{data.name}</td>
+                    <td className="border p-2">{data.phone}</td>
+                    <td className="border p-2">₹{data.totalAmount}</td>
+                    <td className="border p-2">₹{data.paidAmount}</td>
+                    <td className="border p-2">₹{data.pendingAmount}</td>
+                    <td className="border p-2">
                       <button
-                        onClick={() => handleDeleteCustomerData(index)}
-                        className="bg-red-500 text-white px-2 py-1 rounded"
+                        onClick={() => handleDeleteData(data.phone)}
+                        className="bg-red-500 text-white p-2 rounded"
                       >
                         Delete
+                      </button>
+                      <button
+                        onClick={() => handleResendWhatsApp(data)}
+                        className="bg-green-500 text-white p-2 rounded ml-2"
+                      >
+                        Resend WhatsApp
                       </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <button onClick={handleDownloadExcel} className="bg-blue-500 text-white p-2 rounded mt-2">
+            <button onClick={handleDownloadExcel} className="bg-blue-500 text-white p-2 rounded mt-4">
               Download Excel
             </button>
-            <button onClick={closeModal} className="bg-gray-500 text-white p-2 rounded mt-2 ml-2">
+            <button onClick={closeModal} className="bg-gray-500 text-white p-2 rounded mt-4 ml-4">
               Close
             </button>
           </div>
         </div>
-      )}
-
-      {/* Payment Review Section */}
-      {showPaymentReview && (
-        <PaymentReview 
-          togglePaymentReview={togglePaymentReview} 
-          todayEarnings={todayEarnings} 
-          todayPending={todayPending} 
-          totalAmount={totalAmount} 
-        />
       )}
     </div>
   );
