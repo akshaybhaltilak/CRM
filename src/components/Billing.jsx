@@ -23,7 +23,6 @@ const Billing = () => {
   const [newProduct, setNewProduct] = useState({ name: '', price: '', quantity: 1 }); // State for new product with quantity
 
   useEffect(() => {
-    // Calculate today's earnings and pending amounts when the component mounts
     const calculateTodayAmounts = () => {
       const existingData = JSON.parse(localStorage.getItem('customerBillingData')) || [];
       const today = new Date().toLocaleDateString();
@@ -58,7 +57,7 @@ const Billing = () => {
     setCustomerData({ 
       ...customerData, 
       products: updatedProducts,
-      totalAmount: updatedTotalAmount, // Automatically calculate the total bill amount
+      totalAmount: updatedTotalAmount,
     });
     setNewProduct({ name: '', price: '', quantity: 1 }); // Reset new product input
   };
@@ -76,14 +75,11 @@ const Billing = () => {
 
     let existingData = JSON.parse(localStorage.getItem('customerBillingData')) || [];
     
-    // Check if customer already exists
     const existingCustomerIndex = existingData.findIndex(data => data.phone === phone);
     
     if (existingCustomerIndex !== -1) {
-      // Update existing customer data
       existingData[existingCustomerIndex] = { ...existingData[existingCustomerIndex], ...billData };
     } else {
-      // Add new customer data
       existingData.push(billData);
     }
     
@@ -91,15 +87,14 @@ const Billing = () => {
     alert('Bill generated successfully!');
     setCustomerData({ name: '', phone: '', totalAmount: 0, paidAmount: 0, products: [] });
 
-    // Recalculate today's amounts after generating a bill
     const today = new Date().toLocaleDateString();
     if (billData.date === today) {
       setTodayEarnings(todayEarnings + parseFloat(billData.paidAmount));
       setTodayPending(todayPending + pendingAmount);
     }
 
-    handleSendWhatsApp(); // Automatically send WhatsApp message
-    setShowReceipt(true); // Show receipt after generating the bill
+    handleSendWhatsApp();
+    setShowReceipt(true);
   };
 
   const handleSendWhatsApp = () => {
@@ -124,17 +119,15 @@ const Billing = () => {
 
   const closeModal = () => {
     setShowModal(false);
-    setSearchTerm(''); // Clear search term when modal closes
-    setFilteredData(JSON.parse(localStorage.getItem('customerBillingData')) || []); // Reset filtered data
+    setSearchTerm('');
+    setFilteredData(JSON.parse(localStorage.getItem('customerBillingData')) || []);
   };
 
-  // Function to filter customer data based on search term
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
     const existingData = JSON.parse(localStorage.getItem('customerBillingData')) || [];
     
-    // Filter data based on name or phone
     const filtered = existingData.filter(data =>
       data.name.toLowerCase().includes(value.toLowerCase()) ||
       data.phone.includes(value)
@@ -142,21 +135,18 @@ const Billing = () => {
     setFilteredData(filtered);
   };
 
-  // Function to print the receipt
   const handlePrintReceipt = () => {
-    window.print(); // Opens the browser's print dialog
+    window.print(); 
   };
 
-  // Function to delete customer data
   const handleDeleteData = (phone) => {
     const existingData = JSON.parse(localStorage.getItem('customerBillingData')) || [];
     const updatedData = existingData.filter(data => data.phone !== phone);
     localStorage.setItem('customerBillingData', JSON.stringify(updatedData));
-    setFilteredData(updatedData); // Update filtered data
+    setFilteredData(updatedData);
     alert('Customer data deleted successfully.');
   };
 
-  // Function to resend WhatsApp message
   const handleResendWhatsApp = (data) => {
     const message = `Hello ${data.name}, this is a reminder of your pending payment of ₹${data.pendingAmount}. Thank you!`;
     const whatsappURL = `https://wa.me/${data.phone}?text=${encodeURIComponent(message)}`;
@@ -164,16 +154,15 @@ const Billing = () => {
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Billing</h2>
-      {/* Form for customer and products */}
+    <div className="p-4 md:p-8">
+      <h2 className="text-2xl font-bold mb-4 text-blue-700">Billing</h2>
       <input
         type="text"
         name="name"
         placeholder="Customer Name"
         value={customerData.name}
         onChange={handleChange}
-        className="border p-2 mb-2 w-full"
+        className="border p-2 mb-2 w-full md:w-1/2"
       />
       <input
         type="text"
@@ -181,111 +170,87 @@ const Billing = () => {
         placeholder="Customer Phone"
         value={customerData.phone}
         onChange={handleChange}
-        className="border p-2 mb-2 w-full"
+        className="border p-2 mb-2 w-full md:w-1/2"
       />
 
-      {/* Product Input Fields */}
-      <h3 className="text-lg font-semibold mt-4">Add Products</h3>
+      <h3 className="text-lg font-semibold mt-4 text-blue-700">Add Products</h3>
       <input
         type="text"
         placeholder="Product Name"
         value={newProduct.name}
         onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-        className="border p-2 mb-2 w-full"
+        className="border p-2 mb-2 w-full md:w-1/3"
       />
       <input
         type="number"
         placeholder="Product Price"
         value={newProduct.price}
         onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-        className="border p-2 mb-2 w-full"
+        className="border p-2 mb-2 w-full md:w-1/3"
       />
       <input
         type="number"
         placeholder="Quantity"
         value={newProduct.quantity}
         onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
-        className="border p-2 mb-2 w-full"
+        className="border p-2 mb-2 w-full md:w-1/3"
       />
       <button
         onClick={handleAddProduct}
-        className="bg-blue-500 text-white p-2 rounded mt-2"
+        className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded mt-2"
       >
         Add Product
       </button>
 
-      {/* Display Total Amount */}
       <div className="mt-4">
-        <h3 className="text-lg font-semibold">Total Bill Amount: ₹{customerData.totalAmount}</h3>
+        <h3 className="text-lg font-semibold text-blue-700">Total Bill Amount: ₹{customerData.totalAmount}</h3>
         <input
           type="number"
           name="paidAmount"
           placeholder="Paid Amount"
           value={customerData.paidAmount}
           onChange={handleChange}
-          className="border p-2 mb-2 w-full"
+          className="border p-2 mb-2 w-full md:w-1/3"
         />
       </div>
 
-      {/* Buttons for generating bill and viewing data */}
       <button
         onClick={handleGenerateBill}
-        className="bg-green-500 text-white p-2 rounded mt-4"
+        className="bg-green-600 hover:bg-green-700 text-white p-2 rounded mt-4"
       >
         Generate Bill
       </button>
       <button
         onClick={handleViewData}
-        className="bg-gray-500 text-white p-2 rounded ml-4 mt-4"
+        className="bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded mt-4 ml-4"
       >
-        View and Download Data
+        View & Download Data
       </button>
 
-      {/* Payment Review Section */}
-      {showPaymentReview && (
-        <PaymentReview
-          todayEarnings={todayEarnings}
-          todayPending={todayPending}
-          onClose={() => setShowPaymentReview(false)}
-        />
-      )}
-
-      {/* Receipt for Printing */}
       {showReceipt && (
-        <div ref={receiptRef} className="mt-8 border p-4">
-          <h3 className="text-lg font-semibold">Receipt</h3>
+        <div ref={receiptRef} className="mt-8 border p-4 w-full md:w-2/3">
+          <h2 className="text-xl font-bold">Receipt</h2>
           <p>Customer Name: {customerData.name}</p>
           <p>Phone: {customerData.phone}</p>
           <p>Total Amount: ₹{customerData.totalAmount}</p>
           <p>Paid Amount: ₹{customerData.paidAmount}</p>
-          <p>Pending Amount: ₹{Math.max(0, customerData.totalAmount - customerData.paidAmount)}</p>
-          <h4 className="text-lg font-semibold">Products:</h4>
-          <ul>
-            {customerData.products.map((product, index) => (
-              <li key={index}>
-                {product.name} - ₹{product.price} x {product.quantity}
-              </li>
-            ))}
-          </ul>
-          <button onClick={handlePrintReceipt} className="bg-blue-500 text-white p-2 rounded mt-4">
-            Print Receipt
-          </button>
+          <button onClick={handlePrintReceipt} className="bg-blue-600 text-white p-2 rounded mt-4">Print Receipt</button>
         </div>
       )}
 
-      {/* Modal for Viewing Data */}
+      {/* Modal */}
       {showModal && (
-        <div className="modal bg-gray-200 p-4">
-          <div className="modal-content bg-white p-6 rounded">
-            <h3 className="text-lg font-semibold">Customer Billing Data</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-4 rounded-lg w-3/4">
+            <h2 className="text-xl font-bold mb-4">Customer Billing Data</h2>
             <input
               type="text"
-              placeholder="Search by Name or Phone"
+              placeholder="Search by name or phone"
               value={searchTerm}
               onChange={handleSearch}
-              className="border p-2 mb-4 w-full"
+              className="border p-2 w-full mb-4"
             />
-            <table className="w-full border">
+            <table className="w-full text-left border-collapse">
               <thead>
                 <tr>
                   <th className="border p-2">Name</th>
@@ -306,28 +271,30 @@ const Billing = () => {
                     <td className="border p-2">₹{data.pendingAmount}</td>
                     <td className="border p-2">
                       <button
-                        onClick={() => handleDeleteData(data.phone)}
-                        className="bg-red-500 text-white p-2 rounded"
-                      >
-                        Delete
-                      </button>
-                      <button
                         onClick={() => handleResendWhatsApp(data)}
-                        className="bg-green-500 text-white p-2 rounded ml-2"
+                        className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded mr-2"
                       >
                         Resend WhatsApp
+                      </button>
+                      <button
+                        onClick={() => handleDeleteData(data.phone)}
+                        className="bg-red-600 hover:bg-red-700 text-white p-2 rounded"
+                      >
+                        Delete
                       </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <button onClick={handleDownloadExcel} className="bg-blue-500 text-white p-2 rounded mt-4">
-              Download Excel
-            </button>
-            <button onClick={closeModal} className="bg-gray-500 text-white p-2 rounded mt-4 ml-4">
-              Close
-            </button>
+            <div className="mt-4">
+              <button onClick={closeModal} className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded mr-4">
+                Close
+              </button>
+              <button onClick={handleDownloadExcel} className="bg-green-600 hover:bg-green-700 text-white p-2 rounded">
+                Download Excel
+              </button>
+            </div>
           </div>
         </div>
       )}

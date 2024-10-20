@@ -1,4 +1,3 @@
-// PaymentReview.jsx
 import React, { useEffect, useState } from 'react';
 
 const PaymentReview = () => {
@@ -10,7 +9,7 @@ const PaymentReview = () => {
 
   useEffect(() => {
     const customerData = JSON.parse(localStorage.getItem('customerBillingData')) || [];
-    
+
     // Ensure customerData is an array
     if (!Array.isArray(customerData)) {
       console.error("customerData is not an array", customerData);
@@ -37,7 +36,6 @@ const PaymentReview = () => {
         dailyTotal += parseFloat(paidAmount || 0);
       }
 
-      // Calculate weekly and monthly earnings based on your own criteria (you might want to adjust this)
       const billingDate = new Date(date);
       const weekDiff = Math.ceil((today - billingDate) / (1000 * 60 * 60 * 24 * 7));
       const monthDiff = today.getMonth() === billingDate.getMonth() && today.getFullYear() === billingDate.getFullYear();
@@ -57,13 +55,32 @@ const PaymentReview = () => {
   }, []);
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Payment Review</h2>
-      <p><strong>Total Earnings:</strong> ₹{totalEarnings.toFixed(2)}</p>
-      <p><strong>Total Pending Amount:</strong> ₹{totalPending.toFixed(2)}</p>
-      <p><strong>Earnings Today:</strong> ₹{dailyEarnings.toFixed(2)}</p>
-      <p><strong>Earnings Last 7 Days:</strong> ₹{weeklyEarnings.toFixed(2)}</p>
-      <p><strong>Earnings Last Month:</strong> ₹{monthlyEarnings.toFixed(2)}</p>
+    <div className="p-4 md:p-8 bg-gradient-to-br from-blue-500 to-green-500 rounded-lg shadow-lg text-white">
+      <h2 className="text-2xl md:text-3xl font-bold mb-4 text-center animate-pulse">
+        Payment Review
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-4 bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-md hover:bg-opacity-20 transition-all duration-300 ease-in-out">
+          <p className="text-lg font-semibold">Total Earnings:</p>
+          <p className="text-2xl font-bold animate-bounce">₹{totalEarnings.toFixed(2)}</p>
+        </div>
+        <div className="p-4 bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-md hover:bg-opacity-20 transition-all duration-300 ease-in-out">
+          <p className="text-lg font-semibold">Total Pending Amount:</p>
+          <p className="text-2xl font-bold text-red-400 animate-pulse">₹{totalPending.toFixed(2)}</p>
+        </div>
+        <div className="p-4 bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-md hover:bg-opacity-20 transition-all duration-300 ease-in-out">
+          <p className="text-lg font-semibold">Earnings Today:</p>
+          <p className="text-2xl font-bold animate-bounce">₹{dailyEarnings.toFixed(2)}</p>
+        </div>
+        <div className="p-4 bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-md hover:bg-opacity-20 transition-all duration-300 ease-in-out">
+          <p className="text-lg font-semibold">Earnings Last 7 Days:</p>
+          <p className="text-2xl font-bold animate-bounce">₹{weeklyEarnings.toFixed(2)}</p>
+        </div>
+        <div className="p-4 bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-md hover:bg-opacity-20 transition-all duration-300 ease-in-out">
+          <p className="text-lg font-semibold">Earnings Last Month:</p>
+          <p className="text-2xl font-bold animate-bounce">₹{monthlyEarnings.toFixed(2)}</p>
+        </div>
+      </div>
     </div>
   );
 };
