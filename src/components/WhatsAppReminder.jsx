@@ -20,7 +20,7 @@ const WhatsAppReminder = () => {
   };
 
   const generateWhatsAppLink = (customer) => {
-    const { contactNumber, name, pendingAmount } = customer;
+    const { phone, name, pendingAmount } = customer;
     let message = '';
 
     if (messageType === 'wishes') {
@@ -32,7 +32,7 @@ const WhatsAppReminder = () => {
     }
 
     const encodedMessage = encodeURIComponent(message);
-    return `https://wa.me/${contactNumber}?text=${encodedMessage}`;
+    return `https://wa.me/${phone}?text=${encodedMessage}`;
   };
 
   return (
@@ -75,7 +75,7 @@ const WhatsAppReminder = () => {
             onClick={() => handleCustomerSelection(customer)}
           >
             <p><strong>{customer.name}</strong></p>
-            <p>Contact: {customer.contactNumber}</p>
+            <p>Contact: {customer.phone}</p>
             {messageType === 'payment' && <p>Pending Amount: ₹{customer.pendingAmount}</p>}
           </div>
         ))}
