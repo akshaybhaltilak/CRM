@@ -15,7 +15,7 @@ const Billing = () => {
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [todayPending, setTodayPending] = useState(0);
   const [showPaymentReview, setShowPaymentReview] = useState(false);
-  const [showReceipt, setShowReceipt] = useState(false); // State to control receipt visibility
+  const [showReceipt, setShowReceipt] = useState(true); // State to control receipt visibility
   const receiptRef = useRef(); // Reference for printing
 
   const [searchTerm, setSearchTerm] = useState(''); // State for search term
@@ -154,15 +154,15 @@ const Billing = () => {
   };
 
   return (
-    <div className="p-4 md:p-8">
-      <h2 className="text-2xl font-bold mb-4 text-blue-700">Billing</h2>
+    <div className="p-4 md:p-8 bg-gradient-to-b from-purple-50 to-purple-100">
+      <h2 className="text-2xl font-bold mb-4 text-purple-700 animate-pulse">Billing</h2>
       <input
         type="text"
         name="name"
         placeholder="Customer Name"
         value={customerData.name}
         onChange={handleChange}
-        className="border p-2 mb-2 w-full md:w-1/2"
+        className="border p-2 mb-2 w-full md:w-1/2 rounded-lg focus:ring-2 focus:ring-purple-300 transition"
       />
       <input
         type="text"
@@ -170,135 +170,135 @@ const Billing = () => {
         placeholder="Customer Phone"
         value={customerData.phone}
         onChange={handleChange}
-        className="border p-2 mb-2 w-full md:w-1/2"
+        className="border p-2 mb-2 w-full md:w-1/2 rounded-lg focus:ring-2 focus:ring-purple-300 transition"
       />
 
-      <h3 className="text-lg font-semibold mt-4 text-blue-700">Add Products</h3>
+      <h3 className="text-lg font-semibold mt-4 text-purple-700">Add Products</h3>
       <input
         type="text"
         placeholder="Product Name"
         value={newProduct.name}
         onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-        className="border p-2 mb-2 w-full md:w-1/3"
+        className="border p-2 mb-2 w-full md:w-1/3 rounded-lg focus:ring-2 focus:ring-purple-300 transition"
       />
       <input
         type="number"
         placeholder="Product Price"
         value={newProduct.price}
         onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-        className="border p-2 mb-2 w-full md:w-1/3"
+        className="border p-2 mb-2 w-full md:w-1/3 rounded-lg focus:ring-2 focus:ring-purple-300 transition"
       />
       <input
         type="number"
         placeholder="Quantity"
         value={newProduct.quantity}
         onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
-        className="border p-2 mb-2 w-full md:w-1/3"
+        className="border p-2 mb-2 w-full md:w-1/3 rounded-lg focus:ring-2 focus:ring-purple-300 transition"
       />
       <button
         onClick={handleAddProduct}
-        className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded mt-2"
+        className="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded mt-2 transition-transform transform hover:scale-105 animate-bounce"
       >
         Add Product
       </button>
 
       <div className="mt-4">
-        <h3 className="text-lg font-semibold text-blue-700">Total Bill Amount: ₹{customerData.totalAmount}</h3>
+        <h3 className="text-lg font-semibold text-purple-700">Total Bill Amount: ₹{customerData.totalAmount}</h3>
         <input
           type="number"
           name="paidAmount"
           placeholder="Paid Amount"
           value={customerData.paidAmount}
           onChange={handleChange}
-          className="border p-2 mb-2 w-full md:w-1/3"
+          className="border p-2 mb-2 w-full md:w-1/2 rounded-lg focus:ring-2 focus:ring-purple-300 transition"
         />
+        <button
+          onClick={handleGenerateBill}
+          className="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded mt-2 transition-transform transform hover:scale-105"
+        >
+          Generate Bill
+        </button>
+        </div>
+
+<div className="flex flex-col sm:flex-row gap-4 mt-4">
+  <button
+    onClick={handleViewData}
+    className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded transition-transform transform hover:scale-105 w-full sm:w-auto"
+  >
+    View Data
+  </button>
+  <button
+    onClick={handleDownloadExcel}
+    className="bg-green-500 hover:bg-green-600 text-white p-2 rounded transition-transform transform hover:scale-105 w-full sm:w-auto"
+  >
+    Download Data
+  </button>
+</div>
+
+{showModal && (
+  <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-lg w-full">
+      <h3 className="text-lg font-bold mb-2">Customer Data</h3>
+      <input
+        type="text"
+        placeholder="Search..."
+        value={searchTerm}
+        onChange={handleSearch}
+        className="border p-2 mb-2 w-full rounded-lg focus:ring-2 focus:ring-purple-300 transition"
+      />
+      <div className="overflow-x-auto">
+        <table className="min-w-full border-collapse border border-gray-200">
+          <thead>
+            <tr>
+              <th className="border border-gray-300 p-2">Name</th>
+              <th className="border border-gray-300 p-2">Phone</th>
+              <th className="border border-gray-300 p-2">Total Amount</th>
+              <th className="border border-gray-300 p-2">Pending Amount</th>
+              <th className="border border-gray-300 p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredData.map((data, index) => (
+              <tr key={index} className="hover:bg-gray-100 transition">
+                <td className="border border-gray-300 p-2">{data.name}</td>
+                <td className="border border-gray-300 p-2">{data.phone}</td>
+                <td className="border border-gray-300 p-2">₹{data.totalAmount}</td>
+                <td className="border border-gray-300 p-2">₹{data.pendingAmount}</td>
+                <td className="border border-gray-300 p-2">
+                  <button onClick={() => handleResendWhatsApp(data)} className="text-blue-500 hover:underline">Resend WhatsApp</button>
+                  <button onClick={() => handleDeleteData(data.phone)} className="text-red-500 hover:underline ml-2">Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-
-      <button
-        onClick={handleGenerateBill}
-        className="bg-green-600 hover:bg-green-700 text-white p-2 rounded mt-4"
-      >
-        Generate Bill
-      </button>
-      <button
-        onClick={handleViewData}
-        className="bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded mt-4 ml-4"
-      >
-        View & Download Data
-      </button>
-
-      {showReceipt && (
-        <div ref={receiptRef} className="mt-8 border p-4 w-full md:w-2/3">
-          <h2 className="text-xl font-bold">Receipt</h2>
-          <p>Customer Name: {customerData.name}</p>
-          <p>Phone: {customerData.phone}</p>
-          <p>Total Amount: ₹{customerData.totalAmount}</p>
-          <p>Paid Amount: ₹{customerData.paidAmount}</p>
-          <button onClick={handlePrintReceipt} className="bg-blue-600 text-white p-2 rounded mt-4">Print Receipt</button>
-        </div>
-      )}
-
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-4 rounded-lg w-3/4">
-            <h2 className="text-xl font-bold mb-4">Customer Billing Data</h2>
-            <input
-              type="text"
-              placeholder="Search by name or phone"
-              value={searchTerm}
-              onChange={handleSearch}
-              className="border p-2 w-full mb-4"
-            />
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr>
-                  <th className="border p-2">Name</th>
-                  <th className="border p-2">Phone</th>
-                  <th className="border p-2">Total Amount</th>
-                  <th className="border p-2">Paid Amount</th>
-                  <th className="border p-2">Pending Amount</th>
-                  <th className="border p-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredData.map((data, index) => (
-                  <tr key={index}>
-                    <td className="border p-2">{data.name}</td>
-                    <td className="border p-2">{data.phone}</td>
-                    <td className="border p-2">₹{data.totalAmount}</td>
-                    <td className="border p-2">₹{data.paidAmount}</td>
-                    <td className="border p-2">₹{data.pendingAmount}</td>
-                    <td className="border p-2">
-                      <button
-                        onClick={() => handleResendWhatsApp(data)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded mr-2"
-                      >
-                        Resend WhatsApp
-                      </button>
-                      <button
-                        onClick={() => handleDeleteData(data.phone)}
-                        className="bg-red-600 hover:bg-red-700 text-white p-2 rounded"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="mt-4">
-              <button onClick={closeModal} className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded mr-4">
-                Close
-              </button>
-              <button onClick={handleDownloadExcel} className="bg-green-600 hover:bg-green-700 text-white p-2 rounded">
-                Download Excel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <button onClick={closeModal} className="mt-4 bg-gray-400 hover:bg-gray-500 text-white p-2 rounded">Close</button>
     </div>
+  </div>
+)}
+
+{showReceipt && (
+  <div ref={receiptRef} className="p-4 mt-4 bg-white border rounded shadow-md">
+    <h3 className="text-lg font-bold mb-2">Receipt</h3>
+    <p>Name: {customerData.name}</p>
+    <p>Phone: {customerData.phone}</p>
+    <p>Total Amount: ₹{customerData.totalAmount}</p>
+    <p>Paid Amount: ₹{customerData.paidAmount}</p>
+    <p>Pending Amount: ₹{Math.max(0, customerData.totalAmount - customerData.paidAmount)}</p>
+    <h4 className="font-semibold mt-2">Products:</h4>
+    <ul>
+      {customerData.products.map((product, index) => (
+        <li key={index}>{product.name} - ₹{product.price} x {product.quantity}</li>
+      ))}
+    </ul>
+    <button onClick={handlePrintReceipt} className="mt-4 bg-gray-600 hover:bg-gray-700 text-white p-2 rounded">Print Receipt</button>
+  </div>
+)}
+
+{showPaymentReview && <PaymentReview totalEarnings={todayEarnings} totalPending={todayPending} closeReview={() => setShowPaymentReview(false)} />}
+</div>
+
   );
 };
 
