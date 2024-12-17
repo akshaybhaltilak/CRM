@@ -246,33 +246,44 @@ const Billing = () => {
         onChange={handleSearch}
         className="border p-2 mb-2 w-full rounded-lg focus:ring-2 focus:ring-purple-300 transition"
       />
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-gray-200">
-          <thead>
-            <tr>
-              <th className="border border-gray-300 p-2">Name</th>
-              <th className="border border-gray-300 p-2">Phone</th>
-              <th className="border border-gray-300 p-2">Total Amount</th>
-              <th className="border border-gray-300 p-2">Pending Amount</th>
-              <th className="border border-gray-300 p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.map((data, index) => (
-              <tr key={index} className="hover:bg-gray-100 transition">
-                <td className="border border-gray-300 p-2">{data.name}</td>
-                <td className="border border-gray-300 p-2">{data.phone}</td>
-                <td className="border border-gray-300 p-2">₹{data.totalAmount}</td>
-                <td className="border border-gray-300 p-2">₹{data.pendingAmount}</td>
-                <td className="border border-gray-300 p-2">
-                  <button onClick={() => handleResendWhatsApp(data)} className="text-blue-500 hover:underline">Resend WhatsApp</button>
-                  <button onClick={() => handleDeleteData(data.phone)} className="text-red-500 hover:underline ml-2">Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+     <div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-200">
+    <thead>
+      <tr className="bg-purple-100">
+        <th className="border border-gray-300 p-2 text-xs sm:text-sm">Name</th>
+        <th className="border border-gray-300 p-2 text-xs sm:text-sm">Phone</th>
+        <th className="border border-gray-300 p-2 text-xs sm:text-sm">Total Amount</th>
+        <th className="border border-gray-300 p-2 text-xs sm:text-sm">Pending Amount</th>
+        <th className="border border-gray-300 p-2 text-xs sm:text-sm">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {filteredData.map((data, index) => (
+        <tr key={index} className="hover:bg-gray-100">
+          <td className="border border-gray-300 p-2 text-xs sm:text-sm">{data.name}</td>
+          <td className="border border-gray-300 p-2 text-xs sm:text-sm">{data.phone}</td>
+          <td className="border border-gray-300 p-2 text-xs sm:text-sm">₹{data.totalAmount}</td>
+          <td className="border border-gray-300 p-2 text-xs sm:text-sm">₹{data.pendingAmount}</td>
+          <td className="border border-gray-300 p-2 text-xs sm:text-sm">
+            <button
+              onClick={() => handleDeleteData(data.phone)}
+              className="text-red-500 hover:text-red-600 mr-2 text-xs sm:text-sm"
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => handleResendWhatsApp(data)}
+              className="text-blue-500 hover:text-blue-600 text-xs sm:text-sm"
+            >
+              Resend
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
       <button onClick={closeModal} className="mt-4 bg-gray-400 hover:bg-gray-500 text-white p-2 rounded">Close</button>
     </div>
   </div>
