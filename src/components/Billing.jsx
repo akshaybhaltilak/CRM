@@ -136,8 +136,15 @@ const Billing = () => {
   };
 
   const handlePrintReceipt = () => {
-    window.print(); 
+    const printContent = receiptRef.current;
+    const originalContent = document.body.innerHTML;
+  
+    document.body.innerHTML = printContent.innerHTML; // Set body content to receipt
+    window.print(); // Trigger print dialog
+    document.body.innerHTML = originalContent; // Restore original content
+    window.location.reload(); // Reload to fix event handlers
   };
+  
 
   const handleDeleteData = (phone) => {
     const existingData = JSON.parse(localStorage.getItem('customerBillingData')) || [];
@@ -290,21 +297,32 @@ const Billing = () => {
 )}
 
 {showReceipt && (
-  <div ref={receiptRef} className="p-4 mt-4 bg-white border rounded shadow-md">
-    <h3 className="text-lg font-bold mb-2">Receipt</h3>
-    <p>Name: {customerData.name}</p>
-    <p>Phone: {customerData.phone}</p>
-    <p>Total Amount: ₹{customerData.totalAmount}</p>
-    <p>Paid Amount: ₹{customerData.paidAmount}</p>
-    <p>Pending Amount: ₹{Math.max(0, customerData.totalAmount - customerData.paidAmount)}</p>
-    <h4 className="font-semibold mt-2">Products:</h4>
-    <ul>
-      {customerData.products.map((product, index) => (
-        <li key={index}>{product.name} - ₹{product.price} x {product.quantity}</li>
-      ))}
-    </ul>
-    <button onClick={handlePrintReceipt} className="mt-4 bg-gray-600 hover:bg-gray-700 text-white p-2 rounded">Print Receipt</button>
-  </div>
+ <div ref={receiptRef} className="mt-4 p-4 bg-white rounded-lg shadow-md">
+ <h3 className="text-xl font-bold text-center text-purple-700 mb-4">Receipt</h3>
+ <div>
+   <p>Customer Name: {customerData.name}</p>
+   <p>Phone: {customerData.phone}</p>
+   <p>Total Amount: ₹{customerData.totalAmount}</p>
+   <p>Paid Amount: ₹{customerData.paidAmount}</p>
+   <p>Pending Amount: ₹{Math.max(0, customerData.totalAmount - customerData.paidAmount)}</p>
+   <h4 className="mt-2 font-semibold">Products:</h4>
+   <ul>
+     {customerData.products.map((product, index) => (
+       <li key={index}>
+         {product.name} - ₹{product.price} x {product.quantity}
+       </li>
+     ))}
+   </ul>
+ </div>
+ <button
+  onClick={handlePrintReceipt}
+  className="bg-red-500 hover:bg-red-600 text-white p-2 rounded transition-transform transform hover:scale-105 mt-4"
+>
+  Print Receipt
+</button>
+
+</div>
+
 )}
 
 {showPaymentReview && <PaymentReview totalEarnings={todayEarnings} totalPending={todayPending} closeReview={() => setShowPaymentReview(false)} />}
