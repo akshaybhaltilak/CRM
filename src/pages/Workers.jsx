@@ -1,20 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const Workers = () => {
-  const [workers, setWorkers] = useState([
-    { id: 1, name: "Rajesh Kumar", role: "Mason", paymentType: "Daily", wage: "$50/day" },
-    { id: 2, name: "Amit Sharma", role: "Electrician", paymentType: "Contract", wage: "$2000/project" },
-    { id: 3, name: "Sunil Yadav", role: "Laborer", paymentType: "Hourly", wage: "$10/hour" },
-  ]);
-
+  const [workers, setWorkers] = useState([]);
   const [newWorker, setNewWorker] = useState({
     name: "",
     role: "",
     paymentType: "",
     wage: "",
   });
-
   const [loggedInWorker, setLoggedInWorker] = useState(null);
+
+  // Load workers from localStorage on component mount
+  useEffect(() => {
+    const storedWorkers = JSON.parse(localStorage.getItem("workers")) || [];
+    setWorkers(storedWorkers);
+  }, []);
+
+  // Save workers to localStorage whenever the list updates
+  useEffect(() => {
+    localStorage.setItem("workers", JSON.stringify(workers));
+  }, [workers]);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -29,8 +34,20 @@ const Workers = () => {
 
   const addWorker = (e) => {
     e.preventDefault();
-    if (newWorker.name && newWorker.role && newWorker.paymentType && newWorker.wage) {
-      setWorkers([...workers, { id: workers.length + 1, ...newWorker }]);
+    if (newWorker.role && newWorker.paymentType && newWorker.wage) {
+      const workerData = {
+        id: workers.length + 1,
+        name: loggedInWorker,
+        role: newWorker.role,
+        paymentType: newWorker.paymentType,
+        wage: newWorker.wage,
+      };
+
+      const updatedWorkers = [...workers, workerData];
+      setWorkers(updatedWorkers);
+      localStorage.setItem("workers", JSON.stringify(updatedWorkers));
+
+      // Reset the input fields but keep the logged-in name
       setNewWorker({ name: loggedInWorker, role: "", paymentType: "", wage: "" });
     }
   };
@@ -48,6 +65,7 @@ const Workers = () => {
             onChange={handleChange}
             placeholder="Enter your name to log in"
             className="border p-2 mr-2"
+            required
           />
           <button type="submit" className="bg-blue-500 text-white px-4 py-2">
             Log In
@@ -64,6 +82,7 @@ const Workers = () => {
               onChange={handleChange}
               placeholder="Worker Role"
               className="border p-2"
+              required
             />
             <input
               type="text"
@@ -72,6 +91,7 @@ const Workers = () => {
               onChange={handleChange}
               placeholder="Payment Type"
               className="border p-2"
+              required
             />
             <input
               type="text"
@@ -80,6 +100,7 @@ const Workers = () => {
               onChange={handleChange}
               placeholder="Wage"
               className="border p-2"
+              required
             />
             <button type="submit" className="bg-green-500 text-white px-4 py-2">
               Add Work
