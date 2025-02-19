@@ -1,25 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { db } from './firebase.js'; // Firebase config file
+import { collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 
 const Project = () => {
-  // Generate a unique user ID for every visitor
-  const getUserId = () => {
-    let userId = localStorage.getItem("userId");
-    if (!userId) {
-      userId = `user_${Date.now()}`;
-      localStorage.setItem("userId", userId);
-    }
-    return userId;
-  };
-
-  const userId = getUserId(); // Get unique user ID
-  const storageKey = `projects_${userId}`; // Unique key per user
-
-  const getStoredProjects = () => {
-    const storedProjects = localStorage.getItem(storageKey);
-    return storedProjects ? JSON.parse(storedProjects) : [];
-  };
-
-  const [projects, setProjects] = useState(getStoredProjects);
+  const [projects, setProjects] = useState([]);
   const [newProject, setNewProject] = useState({
     name: "",
     location: "",
@@ -31,8 +15,14 @@ const Project = () => {
   });
 
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(projects));
-  }, [projects, storageKey]);
+    const q = query(collection(db, "projects"), orderBy("startDate", "desc"));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+
+    return () => unsubscribe(); // Clean up listener on unmount
+  }, []);
 
   const handleChange = (e) => {
     setNewProject({ ...newProject, [e.target.name]: e.target.value });
@@ -46,21 +36,23 @@ const Project = () => {
     return diffInMonths > 0 ? `${diffInMonths} months` : "Invalid dates";
   };
 
-  const addProject = (e) => {
+  const addProject = async (e) => {
     e.preventDefault();
     const duration = calculateDuration(newProject.startDate, newProject.endDate);
 
     if (newProject.name && newProject.location && newProject.status && newProject.budget && newProject.startDate && newProject.endDate) {
-      const updatedProjects = [...projects, { id: projects.length + 1, ...newProject, duration }];
-      setProjects(updatedProjects);
-      localStorage.setItem(storageKey, JSON.stringify(updatedProjects));
+      await addDoc(collection(db, "projects"), {
+        ...newProject,
+        duration,
+        createdAt: new Date(),
+      });
       setNewProject({ name: "", location: "", status: "", budget: "", startDate: "", endDate: "", duration: "" });
     }
   };
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Project Management</h2>
+      <h2 className="text-2xl font-bold mb-4">Real-Time Project Management</h2>
 
       <form onSubmit={addProject} className="mb-4 flex flex-wrap gap-2">
         <input type="text" name="name" value={newProject.name} onChange={handleChange} placeholder="Project Name" className="border p-2" required />

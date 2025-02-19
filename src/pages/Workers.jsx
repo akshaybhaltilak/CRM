@@ -18,13 +18,16 @@ const Workers = () => {
 
   // Save workers to localStorage whenever the list updates
   useEffect(() => {
-    localStorage.setItem("workers", JSON.stringify(workers));
+    if (workers.length > 0) {
+      localStorage.setItem("workers", JSON.stringify(workers));
+    }
   }, [workers]);
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (newWorker.name) {
+    if (newWorker.name.trim()) {
       setLoggedInWorker(newWorker.name);
+      setNewWorker({ ...newWorker, name: "" }); // Clear the name input field after login
     }
   };
 
@@ -45,7 +48,6 @@ const Workers = () => {
 
       const updatedWorkers = [...workers, workerData];
       setWorkers(updatedWorkers);
-      localStorage.setItem("workers", JSON.stringify(updatedWorkers));
 
       // Reset the input fields but keep the logged-in name
       setNewWorker({ name: loggedInWorker, role: "", paymentType: "", wage: "" });
@@ -103,7 +105,7 @@ const Workers = () => {
               required
             />
             <button type="submit" className="bg-green-500 text-white px-4 py-2">
-              Add Work
+              Add Worker
             </button>
           </form>
         </>
