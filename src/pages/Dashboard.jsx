@@ -116,60 +116,7 @@ const Dashboard = () => {
         </div>
 
         {/* Secondary Menu */}
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Additional Tools</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Link
-            to="/clients"
-            className="flex items-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition"
-          >
-            <div className="p-2 bg-indigo-100 rounded-lg mr-3">
-              <Users className="w-5 h-5 text-indigo-600" />
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900">Clients</h3>
-              <p className="text-sm text-gray-500">Manage client information</p>
-            </div>
-          </Link>
-
-          <Link
-            to="/schedule"
-            className="flex items-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition"
-          >
-            <div className="p-2 bg-emerald-100 rounded-lg mr-3">
-              <CalendarClock className="w-5 h-5 text-emerald-600" />
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900">Schedule</h3>
-              <p className="text-sm text-gray-500">View project timeline</p>
-            </div>
-          </Link>
-
-          <Link
-            to="/reports"
-            className="flex items-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition"
-          >
-            <div className="p-2 bg-red-100 rounded-lg mr-3">
-              <LineChart className="w-5 h-5 text-red-600" />
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900">Reports</h3>
-              <p className="text-sm text-gray-500">View analytics and reports</p>
-            </div>
-          </Link>
-
-          <Link
-            to="/settings"
-            className="flex items-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition"
-          >
-            <div className="p-2 bg-gray-100 rounded-lg mr-3">
-              <Settings className="w-5 h-5 text-gray-600" />
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900">Settings</h3>
-              <p className="text-sm text-gray-500">Manage system preferences</p>
-            </div>
-          </Link>
-        </div>
+       
       </div>
     </div>
   );
